@@ -41,7 +41,7 @@ class ProfileCard extends StatelessWidget {
                   children: const [
                     Text('Student Name',
                         style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text('...type your name here...'),
+                    Text('ZidAvwa Al Barii'),
                   ],
                 ),
               ),
@@ -50,11 +50,11 @@ class ProfileCard extends StatelessWidget {
           const SizedBox(height: 12),
           const Row(children: [
             Expanded(child: Text('Student ID')),
-            Text('...type your student ID here...'),
+            Text('244107020083'),
           ]),
           const Row(children: [
             Expanded(child: Text('Class')),
-            Text('...type your class here...'),
+            Text('TI - 3I'),
           ]),
         ],
       ),
