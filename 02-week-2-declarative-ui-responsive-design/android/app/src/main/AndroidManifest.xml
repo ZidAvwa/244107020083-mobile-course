@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="_02_week_2_declarative_ui_responsive_design"
+        android:label="responsive_dashboard"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
