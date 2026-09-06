@@ -18,7 +18,11 @@ class _DashboardAppState extends State<DashboardApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
-      darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark, colorSchemeSeed: Colors.indigo),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorSchemeSeed: Colors.indigo,
+      ),
       themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       home: DashboardPage(
         isDark: isDark,
@@ -41,39 +45,66 @@ class DashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Student Dashboard'),
+        title: const Text('Academic Overview'),
+        titleTextStyle: Theme.of(context).textTheme.headlineSmall,
         actions: [
           Row(
             children: [
               Icon(isDark ? Icons.dark_mode : Icons.light_mode),
               const SizedBox(width: 4),
-              CupertinoSwitch(
-                value: isDark,
-                onChanged: onDarkChanged,
+              Semantics(
+                label: 'Toggle theme',
+                child: CupertinoSwitch(value: isDark, onChanged: onDarkChanged),
               ),
               const SizedBox(width: 12),
             ],
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final columns = constraints.maxWidth >= 700 ? 2 : 1;
-          return GridView.count(
+      body: Column(
+        children: [
+          Container(
             padding: const EdgeInsets.all(16),
-            crossAxisCount: columns,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 2.6,
-            children: const [
-              DashboardCard(title: 'Assignments', value: '4', ),
-              DashboardCard(title: 'Finished assignments', value: '3'),
-              DashboardCard(title: 'Attendance', value: '100%'),
-              DashboardCard(title: 'Portfolio', value: 'Not Ready'),
-              DashboardCard(title: 'Current week', value: '02'),
-            ],
-          );
-        },
+            child: Row(
+              children: [
+                const CircleAvatar(radius: 25, child: Icon(Icons.person)),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ZidAvwa Al Barii',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const Text('NIM : 244107020083'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 700 ? 2 : 1;
+                return GridView.count(
+                  padding: const EdgeInsets.all(16),
+                  crossAxisCount: columns,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 2.6,
+                  children: const [
+                    DashboardCard(title: 'Current week', value: '02'),
+                    DashboardCard(title: 'Assignments', value: '5'),
+                    DashboardCard(title: 'Finished assignments', value: '3'),
+                    DashboardCard(title: 'Attendance', value: '100%'),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -85,6 +116,16 @@ class DashboardCard extends StatelessWidget {
   final String value;
   @override
   Widget build(BuildContext context) {
-    return Card(child: Padding(padding: const EdgeInsets.all(20), child: Row(children: [Expanded(child: Text(title)), Text(value, style: Theme.of(context).textTheme.headlineSmall)])));
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Expanded(child: Text(title)),
+            Text(value, style: Theme.of(context).textTheme.headlineSmall),
+          ],
+        ),
+      ),
+    );
   }
 }
