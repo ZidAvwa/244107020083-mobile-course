@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+const double kWideBreakpoint = 700;
 void main() => runApp(const DashboardApp());
 
 class DashboardApp extends StatefulWidget {
@@ -67,7 +68,16 @@ class DashboardPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const CircleAvatar(radius: 25, child: Icon(Icons.person)),
+                CircleAvatar(
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer,
+                  foregroundColor: Theme.of(context)
+                      .colorScheme
+                      .onPrimaryContainer,
+                  radius: 25,
+                  child: const Icon(Icons.person),
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -77,7 +87,12 @@ class DashboardPage extends StatelessWidget {
                         'ZidAvwa Al Barii',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const Text('NIM : 244107020083'),
+                      Text(
+                        'NIM : 244107020083',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -87,7 +102,7 @@ class DashboardPage extends StatelessWidget {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final columns = constraints.maxWidth >= 700 ? 2 : 1;
+                final columns = constraints.maxWidth >= kWideBreakpoint ? 2 : 1;
                 return GridView.count(
                   padding: const EdgeInsets.all(16),
                   crossAxisCount: columns,
@@ -95,10 +110,10 @@ class DashboardPage extends StatelessWidget {
                   mainAxisSpacing: 16,
                   childAspectRatio: 2.6,
                   children: const [
-                    DashboardCard(title: 'Current week', value: '02'),
-                    DashboardCard(title: 'Assignments', value: '5'),
-                    DashboardCard(title: 'Finished assignments', value: '3'),
-                    DashboardCard(title: 'Attendance', value: '100%'),
+                    InfoCard(title: 'Current week', value: '02'),
+                    InfoCard(title: 'Assignments', value: '5'),
+                    InfoCard(title: 'Finished assignments', value: '3'),
+                    InfoCard(title: 'Attendance', value: '100%'),
                   ],
                 );
               },
@@ -110,8 +125,8 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-class DashboardCard extends StatelessWidget {
-  const DashboardCard({required this.title, required this.value, super.key});
+class InfoCard extends StatelessWidget {
+  const InfoCard({required this.title, required this.value, super.key});
   final String title;
   final String value;
   @override
