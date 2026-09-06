@@ -50,7 +50,15 @@ The initial dashboard was extended into an **Academic Overview** page featuring:
 ![Light Theme](./screenshots/theme_1.png)
 ![Dark Theme](./screenshots/theme_2.png)
 
-### 4. Refactoring Challenge
+### 4. AI Prompt Challenge
+I only half understand the purpose of this task but here's what i get:
+- Bounded Layout via Expanded: Wrapped the LayoutBuilder / GridView inside an Expanded widget so Flutter allocates the remaining vertical space properly instead of throwing an unbounded constraint crash.
+- Accessibility Enhancements (Semantics): Wrapped the CupertinoSwitch in a Semantics widget with an explicit label ('Toggle theme') to ensure screen readers can announce its purpose.
+- Dynamic Theming (Theme.of(context)): Replaced hardcoded text styles and colors with semantic theme values (such as Theme.of(context).colorScheme and textTheme), allowing the interface to react cleanly to light/dark mode toggling.
+- Component Extraction (InfoCard): Modularized the card UI into a reusable widget accepting dynamic title and value parameters to eliminate duplicate code.
+- Centralized Breakpoint Constant: Replaced the hardcoded magic number 700 in your responsive logic with a named constant (kWideBreakpoint) defined once at the top level.
+
+### 5. Refactoring Challenge
 To improve code maintainability and remove duplication, the following refactoring steps were completed:
 - Extracted the card UI into a reusable `InfoCard` widget that dynamically receives `title` and `value` parameters.
 - Replaced all hardcoded colors and text sizes with `Theme.of(context)` to automatically adapt to the system or user-selected theme.
@@ -61,7 +69,7 @@ To improve code maintainability and remove duplication, the following refactorin
 ![Refactor 1](./screenshots/refactor_1.png)
 ![Refactor 2](./screenshots/refactor_2.png)
 
-### 5. Testing & Analysis
+### 6. Testing & Analysis
 Ran `flutter analyze` and widget tests to ensure the application meets the technical requirements. Includes the documentation of the initial test failure caused by the structural difference between the test expectations and the design requirements.
 
 **From my understanding after reading the test code and searching things on google. I conclude that the test will always fail because the test code is testing the size of one card and that's it, but because the require ment is to add atleast 4 card the test get confused and fails. Well atleast the actual result works as intended (the small and wide screen).**
