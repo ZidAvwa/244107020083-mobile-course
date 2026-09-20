@@ -110,5 +110,15 @@ I always don't understands how these tests works.
 
 ## Reflection
 
-*(Pending)*
+* **When is `setState` still enough, and when should state be lifted into Riverpod?**
+  Use `setState` for local, ephemeral UI state (e.g., toggling a password visibility icon or handling animation states). Lift state to Riverpod when data needs to be shared across multiple screens or separated from UI logic.
+
+* **What is the difference between `context.go` and `context.push`, and when should each be used?**
+  `context.go` updates the route path directly without appending to the stack, making it ideal for tab-based bottom navigation. `context.push` pushes a new page onto the navigation stack, preserving back-button history for detail screens.
+
+* **How does `AsyncValue` prevent bugs compared with three separate booleans?**
+  Separate booleans (`isLoading`, `hasError`, `hasData`) can cause invalid state combinations (e.g., both loading and error being true). `AsyncValue` enforces mutually exclusive states (`loading`, `error`, `data`) and forces you to handle all cases safely via `.when()`.
+
+* **Which part of the AI output did you fix, and why?**
+  Wrapped `MyApp` in `ProviderScope` to fix runtime provider lookup errors, changed `state.uri.pathname` to `state.uri.path` to fix Dart syntax errors, and removed auto-generated comments to keep the code clean.
 

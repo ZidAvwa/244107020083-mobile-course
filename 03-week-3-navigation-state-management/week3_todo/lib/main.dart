@@ -3,23 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'pages/todo_page.dart';
 import 'pages/stats_page.dart';
+import 'pages/product_page.dart';
 
 final router = GoRouter(
   initialLocation: '/',
   routes: [
     ShellRoute(
       builder: (context, state, child) {
-        final selectedIndex = state.uri.path == '/stats' ? 1 : 0;
+        final location = state.uri.path;
+        int selectedIndex = 0;
+        if (location == '/stats') selectedIndex = 1;
+        if (location == '/products') selectedIndex = 2;
+
         return Scaffold(
           body: child,
           bottomNavigationBar: NavigationBar(
             selectedIndex: selectedIndex,
             onDestinationSelected: (index) {
-              if (index == 0) {
-                context.go('/');
-              } else {
-                context.go('/stats');
-              }
+              if (index == 0) context.go('/');
+              if (index == 1) context.go('/stats');
+              if (index == 2) context.go('/products');
             },
             destinations: const [
               NavigationDestination(
@@ -29,6 +32,10 @@ final router = GoRouter(
               NavigationDestination(
                 icon: Icon(Icons.bar_chart),
                 label: 'Stats',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.shopping_bag),
+                label: 'Products',
               ),
             ],
           ),
@@ -42,6 +49,10 @@ final router = GoRouter(
         GoRoute(
           path: '/stats',
           builder: (context, state) => const StatsPage(),
+        ),
+        GoRoute(
+          path: '/products',
+          builder: (context, state) => const ProductPage(),
         ),
       ],
     ),
