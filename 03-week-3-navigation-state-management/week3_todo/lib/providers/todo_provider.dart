@@ -24,6 +24,17 @@ class TodoListNotifier extends Notifier<List<Todo>> {
   void remove(int index) => state = [...state]..removeAt(index);
 }
 
-
 final todoListProvider =
     NotifierProvider<TodoListNotifier, List<Todo>>(TodoListNotifier.new);
+
+final unfinishedTodosProvider = Provider<List<Todo>>((ref) {
+  final todos = ref.watch(todoListProvider);
+  return todos.where((todo) => !todo.done).toList();
+});
+
+final todoStatsProvider = Provider<(int total, int completed, int remaining)>((ref) {
+  final todos = ref.watch(todoListProvider);
+  final completed = todos.where((t) => t.done).length;
+  final remaining = todos.length - completed;
+  return (todos.length, completed, remaining);
+});
