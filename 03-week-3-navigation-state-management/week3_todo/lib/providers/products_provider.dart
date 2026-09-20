@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class ProductsNotifier extends AsyncNotifier<List<String>> {
   @override
   Future<List<String>> build() async {
-    await Future.delayed(const Duration(seconds: 2));
-    return ['Keyboard', 'Mouse', 'Monitor'];
+    // await Future.delayed(const Duration(seconds: 2));
+    // return ['Keyboard', 'Mouse', 'Monitor'];
+    throw Exception('Failed to connect to the server');
   }
 
   Future<void> refresh() async {
