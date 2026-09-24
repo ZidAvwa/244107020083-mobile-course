@@ -34,7 +34,7 @@ class PostListPage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () => ref.invalidate(postListProvider),
-                  child: const Text('Retry'),
+                  child: const Text('Coba lagi'),
                 ),
               ],
             ),
@@ -43,7 +43,7 @@ class PostListPage extends ConsumerWidget {
         data: (posts) {
           if (posts.isEmpty) {
             return const Center(
-                child: Text('No data from the server yet.'));
+                child: Text('Belum ada data dari server.'));
           }
           return RefreshIndicator(
             onRefresh: () =>

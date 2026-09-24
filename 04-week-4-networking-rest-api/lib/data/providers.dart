@@ -14,9 +14,8 @@ final postRepositoryProvider = Provider<PostRepository>(
 class PostListNotifier extends AsyncNotifier<List<Post>> {
   @override
   Future<List<Post>> build() async {
-    // Exceptions from the repository automatically become AsyncError.
-    // Automatic retry is disabled in the provider declaration below
-    // so errors are final and easy to test.
+    // Exception dari repository otomatis menjadi AsyncError.
+    // Inilah ekuivalen deklaratif dari AsyncValue.guard di versi lama.
     final repository = ref.watch(postRepositoryProvider);
     return repository.fetchPosts();
   }
@@ -35,10 +34,45 @@ class PostListNotifier extends AsyncNotifier<List<Post>> {
 final postListProvider =
     AsyncNotifierProvider<PostListNotifier, List<Post>>(
         PostListNotifier.new,
-        // Disable Riverpod 3 automatic retry so errors are final
-        // and testable (otherwise the provider future in tests
-        // would retry and hang).
+        // Nonaktifkan retry otomatis Riverpod 3 agar error langsung
+        // final dan mudah diuji (tanpa ini, future provider di-test
+        // akan me-retry dan menggantung).
         retry: (retryCount, error) => null);
+
+/// Helper khusus testing (letakkan di providers.dart): membaca state
+/// pertama yang bukan loading lewat listener + completer, sehingga
+/// test tidak menunggu retry dan tidak melakukan HTTP sungguhan.
+Future<List<Post>> readPostsOnce(ProviderContainer container) {
+  final completer = Completer<List<Post>>();
+  final sub = container.listen<AsyncValue<List<Post>>>(
+    postListProvider,
+    (previous, next) {
+      if (next.isLoading || completer.isCompleted) return;
+      next.whenData(completer.complete);
+      if (next.hasError) {
+        completer.completeError(
+          next.error ?? StateError('unknown error'),
+          next.stackTrace ?? StackTrace.empty,
+        );
+      }
+    },
+    fireImmediately: true,
+  );
+  return completer.future.whenComplete(sub.close);
+}
+
+Future<Object?> readPostsErrorOnce(ProviderContainer container) {
+  final completer = Completer<Object?>();
+  final sub = container.listen<AsyncValue<List<Post>>>(
+    postListProvider,
+    (previous, next) {
+      if (next.isLoading || completer.isCompleted) return;
+      completer.complete(next.error);
+    },
+    fireImmediately: true,
+  );
+  return completer.future.whenComplete(sub.close);
+}
 
 String friendlyErrorMessage(Object error) {
   if (error is DioException) {
@@ -46,19 +80,19 @@ String friendlyErrorMessage(Object error) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return 'Slow connection or timeout. Check your internet and retry.';
+        return 'Koneksi lambat atau timeout. Periksa internet Anda lalu coba lagi.';
       case DioExceptionType.connectionError:
-        return 'Cannot reach the server. Check your internet connection.';
+        return 'Tidak dapat terhubung ke server. Periksa internet Anda.';
       case DioExceptionType.badResponse:
         final code = error.response?.statusCode;
-        if (code == 404) return 'Data not found (404).';
+        if (code == 404) return 'Data tidak ditemukan (404).';
         if (code == 401 || code == 403) {
-          return 'Access denied ($code). Check your credentials.';
+          return 'Akses ditolak ($code). Periksa kredensial Anda.';
         }
-        return 'Server problem ($code). Try again later.';
+        return 'Server bermasalah ($code). Coba lagi nanti.';
       default:
-        return 'A network error occurred. Try again.';
+        return 'Terjadi kesalahan jaringan. Coba lagi.';
     }
   }
-  return 'An unexpected error occurred: $error';
+  return 'Terjadi kesalahan tak terduga: $error';
 }

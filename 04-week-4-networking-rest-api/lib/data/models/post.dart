@@ -15,8 +15,8 @@ class Post {
     return Post(
       userId: (json['userId'] as num?)?.toInt() ?? 0,
       id: (json['id'] as num?)?.toInt() ?? 0,
-      title: json['title'] as String? ?? '',
-      body: json['body'] as String? ?? '',
+      title: json['title']?.toString() ?? '',
+      body: json['body']?.toString() ?? '',
     );
   }
 
