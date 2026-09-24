@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/network_errors.dart';
 import '../data/paged_post.dart';
-import '../data/providers.dart';
 
 class PostDetailPage extends ConsumerWidget {
   const PostDetailPage({required this.postId, super.key});
