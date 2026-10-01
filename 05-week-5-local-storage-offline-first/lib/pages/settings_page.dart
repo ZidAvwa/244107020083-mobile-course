@@ -1,5 +1,8 @@
+// Only replace your Lab 1 file with this if it has no SettingsPage widget.
+// It keeps the Lab 1 providers and adds a simple page.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../data/prefs.dart';
 
 final prefsRepositoryProvider = Provider((ref) => PrefsRepository());
@@ -8,8 +11,7 @@ final darkModeProvider =
 
 class DarkModeNotifier extends AsyncNotifier<bool> {
   @override
-  Future<bool> build() =>
-      ref.watch(prefsRepositoryProvider).getDarkMode();
+  Future<bool> build() => ref.watch(prefsRepositoryProvider).getDarkMode();
 
   Future<void> toggle() async {
     final next = !(state.value ?? false);
@@ -18,5 +20,22 @@ class DarkModeNotifier extends AsyncNotifier<bool> {
       await ref.read(prefsRepositoryProvider).setDarkMode(next);
       return next;
     });
+  }
+}
+
+class SettingsPage extends ConsumerWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dark = ref.watch(darkModeProvider).value ?? false;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Settings')),
+      body: SwitchListTile(
+        title: const Text('Dark mode'),
+        value: dark,
+        onChanged: (_) => ref.read(darkModeProvider.notifier).toggle(),
+      ),
+    );
   }
 }
