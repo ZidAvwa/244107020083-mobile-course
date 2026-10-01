@@ -1,17 +1,36 @@
-# week5_offline_notes
+# Flutter Week 5 - Local Storage & Offline First
 
-A new Flutter project.
+## Project Stages
 
-## Getting Started
+### 1. Lab 1: SharedPreferences
 
-This project is a starting point for a Flutter application.
+Set up the project and save the dark mode preference locally.
+- Store UI theme settings with `SharedPreferences`.
+- Load the saved theme on startup through an `AsyncNotifier`.
+- Keep the settings screen separate from the notes experience.
 
-A few resources to get you started if this is your first Flutter project:
+![Dark mode settings](./screenshots/SettingsPage.png)
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### 2. Lab 2: SQLite and the notes repository
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Build the local notes database and move all database work behind a repository.
+- Create a SQLite database for notes.
+- Add repository methods for reading, inserting, deleting, and counting dirty
+  notes.
+- Keep a `dirty` flag so unsynced notes can be identified later.
+- Display a sync badge when the app has data waiting to be uploaded.
+
+![Notes list](./screenshots/NotePage.png)
+
+### 3. Lab 3: Cache-first and the sync queue
+
+Add the offline-first cache flow and sync behavior for local notes and posts.
+- Read cached posts immediately when the app opens.
+- Refresh data in the background when the app is online.
+- Keep showing cached content while the app is offline.
+- Simulate note sync by marking dirty notes as synced after the upload step.
+
+![Posts with internet](./screenshots/Internet.png)
+![Posts when offline](./screenshots/NoInternet.png)
+
+# AI MESSED EVERYTHING UP IDK ANYMORE. PLS STOP WITH THESE AI CHALLENGE AI CHALLENGE #
