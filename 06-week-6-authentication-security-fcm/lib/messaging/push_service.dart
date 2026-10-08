@@ -1,6 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import '../routes.dart';
+
 final _local = FlutterLocalNotificationsPlugin();
 
 /// Deep link received from a tapped notification (e.g. "/announcement/3").
@@ -47,24 +49,55 @@ Future<void> initFcmToken({
   FirebaseMessaging.instance.onTokenRefresh.listen(onToken);
 
   // 3. Subscribe to the campus topic (e.g. all students of a cohort).
-  await FirebaseMessaging.instance.subscribeToTopic('campus-announcement');
+  await subscribeCampusTopic();
 }
 
-/// Calls [onOpen] with the "route" data field when the user taps a
-/// notification (app in background, or launched from terminated state).
-Future<void> listenNotificationTaps(void Function(String route) onOpen) async {
-  void handle(RemoteMessage m) {
-    final route = m.data['route'];
-    if (route is String && route.isNotEmpty) {
-      pendingDeepLink = route;
-      onOpen(route);
-    }
-  }
+void registerBackgroundHandler() {
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+}
 
+/// Foreground: the system shows NO banner, so display one via a local
+/// notification. Background tap: onMessageOpenedApp.
+void listenForeground(void Function(String route) go) {
+  FirebaseMessaging.onMessage.listen((message) async {
+    final route = routeFromMessage(message.data);
+    const androidDetails = AndroidNotificationDetails(
+      'announcement',
+      'Campus Announcements',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    await _local.show(
+      id: message.hashCode,
+      title: message.notification?.title ?? 'Announcement',
+      body: message.notification?.body ?? '',
+      notificationDetails: const NotificationDetails(android: androidDetails),
+      payload: route,
+    );
+  });
+
+  // Background -> tapped.
+  FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    go(routeFromMessage(message.data));
+  });
+}
+
+/// Terminated -> opened from a notification. Call once the router is ready.
+Future<void> handleTerminated(void Function(String route) go) async {
   final initial = await FirebaseMessaging.instance.getInitialMessage();
-  if (initial != null) handle(initial);
-  FirebaseMessaging.onMessageOpenedApp.listen(handle);
+  if (initial != null) go(routeFromMessage(initial.data));
+  final pending = pendingDeepLink;
+  if (pending != null) {
+    pendingDeepLink = null;
+    go(pending);
+  }
 }
+
+Future<void> subscribeCampusTopic() =>
+    FirebaseMessaging.instance.subscribeToTopic('campus-announcement');
+
+Future<void> unsubscribeCampusTopic() =>
+    FirebaseMessaging.instance.unsubscribeFromTopic('campus-announcement');
 
 /// Truncated token for screenshots: first 12 chars + "...".
 String truncateToken(String? token) {

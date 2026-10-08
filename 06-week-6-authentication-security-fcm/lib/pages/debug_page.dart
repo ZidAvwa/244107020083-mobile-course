@@ -1,7 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../messaging/push_service.dart';
 import '../providers/debug_log_provider.dart';
@@ -45,21 +45,15 @@ class _DebugPageState extends ConsumerState<DebugPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'FCM token (truncated)',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              truncateToken(_token),
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 18),
-            ),
+            const Text('FCM token (truncated)',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(truncateToken(_token),
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 18)),
             const SizedBox(height: 8),
             Row(
               children: [
                 OutlinedButton(
-                  onPressed: _load,
-                  child: const Text('Reload token'),
-                ),
+                    onPressed: _load, child: const Text('Reload token')),
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.copy, size: 18),
@@ -71,8 +65,7 @@ class _DebugPageState extends ConsumerState<DebugPage> {
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Token copied to clipboard'),
-                            ),
+                                content: Text('Token copied to clipboard')),
                           );
                         },
                 ),
@@ -80,7 +73,11 @@ class _DebugPageState extends ConsumerState<DebugPage> {
             ),
             const Divider(height: 32),
             const Text('Events', style: TextStyle(fontWeight: FontWeight.bold)),
-            Expanded(child: ListView(children: [for (final l in log) Text(l)])),
+            Expanded(
+              child: ListView(
+                children: [for (final l in log) Text(l)],
+              ),
+            ),
           ],
         ),
       ),

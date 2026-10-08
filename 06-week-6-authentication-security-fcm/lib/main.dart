@@ -1,5 +1,4 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +10,7 @@ import 'pages/home_page.dart';
 import 'pages/login_page.dart';
 import 'providers/auth_provider.dart';
 import 'providers/debug_log_provider.dart';
+import 'routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +20,7 @@ Future<void> main() async {
   var firebaseReady = false;
   try {
     await Firebase.initializeApp(); // needs android/app/google-services.json
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    registerBackgroundHandler();
     firebaseReady = true;
   } catch (e) {
     log.add('Firebase init failed: $e');
@@ -58,17 +58,17 @@ class _CampusNotifyAppState extends State<CampusNotifyApp> {
         final auth = widget.container.read(authStateProvider);
         if (auth.isLoading && !auth.hasValue) return null;
         final loggedIn = auth.value ?? false;
-        final goingLogin = state.matchedLocation == '/login';
-        if (!loggedIn && !goingLogin) return '/login';
-        if (loggedIn && goingLogin) return '/';
+        final goingLogin = state.matchedLocation == AppRoutes.login;
+        if (!loggedIn && !goingLogin) return AppRoutes.login;
+        if (loggedIn && goingLogin) return AppRoutes.home;
         return null;
       },
       routes: [
-        GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
-        GoRoute(path: '/', builder: (_, __) => const HomePage()),
-        GoRoute(path: '/debug', builder: (_, __) => const DebugPage()),
+        GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginPage()),
+        GoRoute(path: AppRoutes.home, builder: (_, __) => const HomePage()),
+        GoRoute(path: AppRoutes.debug, builder: (_, __) => const DebugPage()),
         GoRoute(
-          path: '/announcement/:id',
+          path: AppRoutes.announcementPattern,
           builder: (_, s) =>
               AnnouncementPage(id: s.pathParameters['id'] ?? ''),
         ),
@@ -100,7 +100,8 @@ class _CampusNotifyAppState extends State<CampusNotifyApp> {
         }
       });
 
-      await listenNotificationTaps((route) => _router.go(route));
+      listenForeground((route) => _router.go(route));
+      await handleTerminated((route) => _router.go(route));
     } catch (e) {
       log.add('Push setup error: $e');
     }
