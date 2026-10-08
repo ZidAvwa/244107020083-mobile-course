@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/api_errors.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -43,7 +44,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             const SizedBox(height: 16),
             if (auth.hasError)
-              Text('${auth.error}',
+              Text(friendlyError(auth.error!),
                   style: TextStyle(color: Theme.of(context).colorScheme.error)),
             FilledButton(
               onPressed: auth.isLoading
