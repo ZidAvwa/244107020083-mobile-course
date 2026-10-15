@@ -50,7 +50,7 @@ class _CampusNotifyAppState extends State<CampusNotifyApp> {
   void initState() {
     super.initState();
     // Re-run the redirect whenever auth state changes.
-    widget.container.listen(authStateProvider, (_, __) => _refresh.value++);
+    widget.container.listen(authStateProvider, (_, _) => _refresh.value++);
 
     _router = GoRouter(
       refreshListenable: _refresh,
@@ -64,9 +64,9 @@ class _CampusNotifyAppState extends State<CampusNotifyApp> {
         return null;
       },
       routes: [
-        GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginPage()),
-        GoRoute(path: AppRoutes.home, builder: (_, __) => const HomePage()),
-        GoRoute(path: AppRoutes.debug, builder: (_, __) => const DebugPage()),
+        GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
+        GoRoute(path: AppRoutes.home, builder: (_, _) => const HomePage()),
+        GoRoute(path: AppRoutes.debug, builder: (_, _) => const DebugPage()),
         GoRoute(
           path: AppRoutes.announcementPattern,
           builder: (_, s) =>

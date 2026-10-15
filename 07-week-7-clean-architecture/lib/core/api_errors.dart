@@ -1,8 +1,11 @@
 import 'package:dio/dio.dart';
 
+import 'failures.dart';
+
 /// Maps raw exceptions to user-friendly messages, so the UI never
 /// sees DioException or stack traces.
 String friendlyError(Object error) {
+  if (error is Failure) return error.message;
   if (error is DioException) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
@@ -27,4 +30,15 @@ String friendlyError(Object error) {
     }
   }
   return error.toString().replaceFirst('Exception: ', '');
+}
+
+/// Data-layer helper: converts any exception into a domain [Failure].
+/// Dio errors become [NetworkFailure]; everything else uses [otherwise].
+Failure failureFromError(
+  Object error, {
+  required Failure Function(String message) otherwise,
+}) {
+  if (error is Failure) return error;
+  if (error is DioException) return NetworkFailure(friendlyError(error));
+  return otherwise(friendlyError(error));
 }
