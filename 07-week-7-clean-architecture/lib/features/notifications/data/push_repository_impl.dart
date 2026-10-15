@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-import '../../../core/api_errors.dart';
+import '../../../infrastructure/network/api_errors.dart';
 import '../../../core/failures.dart';
 import '../domain/repositories/push_repository.dart';
 

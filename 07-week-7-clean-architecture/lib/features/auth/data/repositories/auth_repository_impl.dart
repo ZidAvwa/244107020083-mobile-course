@@ -1,4 +1,4 @@
-import '../../../../core/api_errors.dart';
+import '../../../../infrastructure/network/api_errors.dart';
 import '../../../../core/failures.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
