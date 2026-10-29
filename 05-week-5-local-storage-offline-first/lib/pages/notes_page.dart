@@ -7,50 +7,23 @@ class NotesPage extends ConsumerWidget {
   const NotesPage({super.key});
 
   Future<void> _addNote(BuildContext context, WidgetRef ref) async {
-    final titleCtrl = TextEditingController();
-    final bodyCtrl = TextEditingController();
-    final ok = await showDialog<bool>(
+    final draft = await showDialog<_NoteDraft>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('New note'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleCtrl,
-              decoration: const InputDecoration(labelText: 'Title'),
-              autofocus: true,
-            ),
-            TextField(
-              controller: bodyCtrl,
-              decoration: const InputDecoration(labelText: 'Body'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Save')),
-        ],
-      ),
+      builder: (_) => const _NewNoteDialog(),
     );
-    final title = titleCtrl.text.trim();
-    final body = bodyCtrl.text.trim();
-    titleCtrl.dispose();
-    bodyCtrl.dispose();
-    if (ok == true && title.isNotEmpty) {
-      await ref.read(notesProvider.notifier).add(title, body);
+    if (draft != null) {
+      await ref.read(notesProvider.notifier).add(draft.title, draft.body);
     }
   }
 
   Future<void> _sync(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
     if (ref.read(forceOfflineProvider)) {
-      messenger.showSnackBar(const SnackBar(
-          content: Text('You are offline. Turn offline off to sync.')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('You are offline. Turn offline off to sync.'),
+        ),
+      );
       return;
     }
     final count = await ref.read(notesProvider.notifier).sync();
@@ -112,6 +85,79 @@ class NotesPage extends ConsumerWidget {
                 },
               ),
       ),
+    );
+  }
+}
+
+class _NoteDraft {
+  const _NoteDraft(this.title, this.body);
+
+  final String title;
+  final String body;
+}
+
+class _NewNoteDialog extends StatefulWidget {
+  const _NewNoteDialog();
+
+  @override
+  State<_NewNoteDialog> createState() => _NewNoteDialogState();
+}
+
+class _NewNoteDialogState extends State<_NewNoteDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _bodyController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _bodyController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('New note'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
+              autofocus: true,
+              validator: (value) =>
+                  value?.trim().isNotEmpty == true ? null : 'Title is required',
+            ),
+            TextField(
+              controller: _bodyController,
+              decoration: const InputDecoration(labelText: 'Body'),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(
+                context,
+                _NoteDraft(
+                  _titleController.text.trim(),
+                  _bodyController.text.trim(),
+                ),
+              );
+            }
+          },
+          child: const Text('Save'),
+        ),
+      ],
     );
   }
 }
