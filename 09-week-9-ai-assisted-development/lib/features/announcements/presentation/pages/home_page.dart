@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routes.dart';
-import '../../domain/usecases/search_announcements.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/announcement_search_providers.dart';
 
@@ -15,10 +14,6 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  static const List<AnnouncementSummary> _announcements = [
-    (id: '1', title: 'Welcome to Campus Notify'),
-  ];
-
   final _searchController = TextEditingController();
 
   @override
@@ -30,8 +25,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final query = ref.watch(announcementSearchQueryProvider);
+    final announcementsList = ref.watch(announcementSummariesProvider);
     final announcements = ref.watch(searchAnnouncementsProvider)(
-      announcements: _announcements,
+      announcements: announcementsList,
       query: query,
     );
 

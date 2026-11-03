@@ -25,8 +25,8 @@ Added title search to
 - A clear action restores the full list.
 - A no-results message appears when nothing matches.
 - Tapping a result still opens its announcement detail route.
-- The list currently contains one hardcoded announcement, so search filters
-  that existing entry; no repository or backend was added.
+- At the time of this lab, the list contained one hardcoded announcement; no
+  repository or backend was added.
 
 `test/announcement_search_test.dart` checks matching with mixed case and extra
 spaces, the no-results state, clearing the query, and detail navigation.
@@ -70,17 +70,34 @@ with severity and reasoning. The findings and decisions are documented below.
 
 | AI finding | Review decision | Evidence / follow-up |
 |---|---|---|
-| Search query state can outlive the page's text controller. | **Accept; fix still needed.** | The query is held in a root-scoped Riverpod provider, while the `TextEditingController` belongs to `HomePage`. If the page is recreated while the provider scope survives, the field can be blank while filtering remains active. Add a lifecycle reset or align the controller and query lifetimes, then test leaving and reopening the page. |
+| Search query state can outlive the page's text controller. | **Accepted and fixed below.** | The query now uses Riverpod's auto-dispose notifier provider. The route-away-and-reopen widget test confirms the field is blank and the full list is restored. |
 | Search uses a hardcoded announcement instead of SQLite/Dio data. | **Reject as a defect; document as a limitation.** | This Week 7-derived app has no announcement repository or API to connect to, and the feature is meant to demonstrate local search. Adding SQLite/Dio or inventing a backend would exceed the feature scope. |
-| Widget test does not verify filtering among multiple visible announcements. | **Accept as a test improvement; still needed.** | The pure use-case test already checks two announcements, but the widget test renders only the current single hardcoded item. Add a widget test with multiple announcements if the UI is made injectable/provider-backed. |
+| Widget test does not verify filtering among multiple visible announcements. | **Accepted and tested below.** | The widget uses an overrideable in-memory announcement provider, and its test verifies filtering three fixture items. |
 
-### Remaining verification
+### Verification
 
-The AI Challenge is **not fully complete yet**: the accepted query-lifecycle
-finding has not been fixed and proven with a regression test. The multi-item
-widget-test suggestion is also outstanding. The existing search tests and
-analyzer results documented above do not verify either follow-up. Once fixed,
-record the test and analyzer results here.
+The lifecycle and multi-item test follow-ups are completed and tested in the
+section below.
 
 ![AI Challenge review prompt](./screenshots/AIChallenge_Prompt.png)
 ![AI Challenge review response](./screenshots/AIChallenge_Result.png)
+
+## Refactoring, testing, and common errors
+
+- Made search-query state auto-dispose, so reopening the page clears the field
+  and restores the full list.
+- Added a test-only provider override and widget coverage for filtering three
+  announcements and reopening the page.
+- Kept title matching in the pure domain use case and announcements in memory;
+  no database, backend, or dependency was added.
+- **Accepted and fixed:** stale search state; verified by the page-reopen test.
+- **Rejected:** adding SQLite/Dio. This app has no announcement API or
+  repository, so that would add unrelated infrastructure.
+
+Validation from the Week 9 folder: focused search tests (3 passed), full test
+suite (10 passed), `flutter analyze` (no issues), and formatting check (3 files,
+0 changed).
+
+![Focused search tests](./screenshots/Ref_Search_Tests.png)
+![Full test, analysis, and formatting validation](./screenshots/Ref_Full_Validation.png)
+![Search results for multiple matching announcements](./screenshots/Ref_Search_Match.png)
