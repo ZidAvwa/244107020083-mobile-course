@@ -101,3 +101,14 @@ suite (10 passed), `flutter analyze` (no issues), and formatting check (3 files,
 ![Focused search tests](./screenshots/Ref_Search_Tests.png)
 ![Full test, analysis, and formatting validation](./screenshots/Ref_Full_Validation.png)
 ![Search results for multiple matching announcements](./screenshots/Ref_Search_Match.png)
+
+## Reflection
+
+- **Hallucination:** The review assumed announcements should use SQLite/Dio.
+  The app has no such data source, so I rejected that finding.
+- **Most useful prompt:** The focused review prompt; I clarified the app context
+  and asked for lifecycle and multi-item tests.
+- **Refactor:** Made search state auto-dispose and title matching a pure use
+  case; added provider overrides for multi-item widget tests.
+- **Hardest decision:** Rejecting SQLite/Dio, since adding it would expand
+  scope. I accepted the reproducible stale-search issue and fixed it.
