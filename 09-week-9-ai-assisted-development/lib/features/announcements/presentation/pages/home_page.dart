@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routes.dart';
+import '../../domain/usecases/search_announcements.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../providers/announcement_search_providers.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -13,10 +15,11 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  static const _announcements = [(id: '1', title: 'Welcome to Campus Notify')];
+  static const List<AnnouncementSummary> _announcements = [
+    (id: '1', title: 'Welcome to Campus Notify'),
+  ];
 
   final _searchController = TextEditingController();
-  String _query = '';
 
   @override
   void dispose() {
@@ -26,10 +29,10 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final normalizedQuery = _normalize(_query);
-    final announcements = _announcements.where(
-      (announcement) =>
-          _normalize(announcement.title).contains(normalizedQuery),
+    final query = ref.watch(announcementSearchQueryProvider);
+    final announcements = ref.watch(searchAnnouncementsProvider)(
+      announcements: _announcements,
+      query: query,
     );
 
     return Scaffold(
@@ -55,19 +58,23 @@ class _HomePageState extends ConsumerState<HomePage> {
               decoration: InputDecoration(
                 hintText: 'Search announcements',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon: _query.isEmpty
+                suffixIcon: query.isEmpty
                     ? null
                     : IconButton(
                         tooltip: 'Clear search',
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          setState(() => _query = '');
+                          ref
+                              .read(announcementSearchQueryProvider.notifier)
+                              .clear();
                         },
                       ),
                 border: const OutlineInputBorder(),
               ),
-              onChanged: (value) => setState(() => _query = value),
+              onChanged: (value) => ref
+                  .read(announcementSearchQueryProvider.notifier)
+                  .update(value),
             ),
           ),
           Expanded(
@@ -95,6 +102,3 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 }
-
-String _normalize(String value) =>
-    value.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();

@@ -1,11 +1,37 @@
 import 'package:campus_notify/features/announcements/presentation/pages/announcement_page.dart';
 import 'package:campus_notify/features/announcements/presentation/pages/home_page.dart';
+import 'package:campus_notify/features/announcements/domain/usecases/search_announcements.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
+  test('search matches case and whitespace normalized titles', () {
+    const announcements = <AnnouncementSummary>[
+      (id: '1', title: 'Welcome to Campus Notify'),
+      (id: '2', title: 'Campus Events'),
+    ];
+
+    final results = const SearchAnnouncements()(
+      announcements: announcements,
+      query: '  cAMPUS    NOTIFY ',
+    );
+
+    expect(results.map((announcement) => announcement.id), ['1']);
+    expect(
+      const SearchAnnouncements()(
+        announcements: announcements,
+        query: 'no matching announcement',
+      ),
+      isEmpty,
+    );
+    expect(
+      const SearchAnnouncements()(announcements: announcements, query: '   '),
+      announcements,
+    );
+  });
+
   testWidgets('search filters announcements and clearing restores navigation', (
     tester,
   ) async {

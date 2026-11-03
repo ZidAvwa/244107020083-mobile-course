@@ -43,3 +43,26 @@ flutter analyze
 
 ![Lab 2 search with a matching announcement](./screenshots/Lab2_Search_Match.png)
 ![Lab 2 search with no matching announcements](./screenshots/Lab2_Search_NoResults.png)
+
+## Lab 3 - Debug and refactor
+
+Checked the announcement search behavior before refactoring. The existing
+focused test passed for case-insensitive matching, repeated whitespace, no
+results, clearing the query, and detail navigation, so no reproducible search
+bug was found. Rather than inventing a bug or making an unnecessary behavior
+change, the search logic was refactored for clearer separation of concerns:
+
+- Moved title matching and query normalization into the pure
+  `SearchAnnouncements` use case.
+- Moved search-query state into a Riverpod `Notifier`.
+- Kept the announcement list in memory; no repository or data layer was added.
+- Recorded the debugging result and rationale in `docs/ai-log.md`.
+
+The focused search test, full test suite (9 tests), `flutter analyze`, and
+formatting check for the changed Dart files passed. A workspace-wide formatter
+check could not complete because of a missing generated Gradle path under
+`build/`. Hot restart was unavailable because no Flutter app was connected.
+
+![Lab 3 Prompt](./screenshots/Lab3_Prompt.png)
+![Lab 3 debugging and refactoring result](./screenshots/Lab3_Result.png)
+![Lab 3 test and analysis results](./screenshots/Lab3_Test.png)
