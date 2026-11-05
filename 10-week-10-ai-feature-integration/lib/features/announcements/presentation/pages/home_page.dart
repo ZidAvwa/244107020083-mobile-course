@@ -36,6 +36,11 @@ class _HomePageState extends ConsumerState<HomePage> {
         title: const Text('Announcements'),
         actions: [
           IconButton(
+            tooltip: 'Ask AI',
+            icon: const Icon(Icons.auto_awesome),
+            onPressed: () => context.push(AppRoutes.aiChat),
+          ),
+          IconButton(
             icon: const Icon(Icons.bug_report),
             onPressed: () => context.go(AppRoutes.debug),
           ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'app/push_bootstrap.dart';
+import 'features/ai_chat/presentation/pages/ai_chat_page.dart';
 import 'features/announcements/presentation/pages/announcement_page.dart';
 import 'features/announcements/presentation/pages/home_page.dart';
 import 'features/auth/presentation/pages/login_page.dart';
@@ -67,6 +68,7 @@ class _CampusNotifyAppState extends State<CampusNotifyApp> {
       routes: [
         GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
         GoRoute(path: AppRoutes.home, builder: (_, _) => const HomePage()),
+        GoRoute(path: AppRoutes.aiChat, builder: (_, _) => const AiChatPage()),
         GoRoute(path: AppRoutes.debug, builder: (_, _) => const DebugPage()),
         GoRoute(
           path: AppRoutes.announcementPattern,
