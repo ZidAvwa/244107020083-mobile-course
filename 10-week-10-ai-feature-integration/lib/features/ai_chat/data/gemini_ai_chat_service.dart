@@ -6,6 +6,14 @@ import '../domain/ai_chat_service.dart';
 import 'ai_api_key_store.dart';
 
 class GeminiAiChatService implements AiChatService {
+  static const systemPrompt =
+      'You are Campus Notify’s friendly study assistant. Give concise, '
+      'accurate, practical answers for students. Do not claim access to campus '
+      'announcements, schedules, accounts, or private records. Never ask for '
+      'passwords, API keys, or sensitive personal information. For urgent, '
+      'medical, legal, or safety concerns, direct the user to appropriate '
+      'qualified help or official campus resources.';
+
   GeminiAiChatService({required this.keyStore, Dio? client})
     : _client =
           client ??
@@ -58,6 +66,11 @@ class GeminiAiChatService implements AiChatService {
         _endpoint.toString(),
         queryParameters: {'alt': 'sse'},
         data: {
+          'systemInstruction': {
+            'parts': [
+              {'text': systemPrompt},
+            ],
+          },
           'contents': [
             {
               'parts': [
