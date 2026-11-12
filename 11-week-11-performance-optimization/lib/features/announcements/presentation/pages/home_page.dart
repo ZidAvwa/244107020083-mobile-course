@@ -42,7 +42,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           IconButton(
             icon: const Icon(Icons.bug_report),
-            onPressed: () => context.go(AppRoutes.debug),
+            onPressed: () => context.push(AppRoutes.debug),
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -91,7 +91,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       for (final announcement in announcements)
                         ListTile(
                           title: Text(announcement.title),
-                          onTap: () => context.go(
+                          onTap: () => context.push(
                             AppRoutes.announcement(announcement.id),
                           ),
                         ),
