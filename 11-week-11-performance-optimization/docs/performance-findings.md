@@ -7,8 +7,6 @@
 
 ## Confirmed finding
 
-`dart_devtools_2026-11-12_14_12_55.104.json`
-
 ### 1. Raster jank on Flutter frame 124
 
 - Screen/action: Not identifiable.
@@ -22,3 +20,11 @@
 - `screenshots/peak3.png`: Flutter frame 398; DevTools reports no jank. Build 3.2 ms, layout 6.6 ms, paint 1.9 ms, raster 6.9 ms.
 
 These two frames are not performance findings. The screenshots currently support only one confirmed issue; they do not provide evidence for two additional findings. Do not infer repeated requests, excessive rebuilds, slow scrolling, or memory leaks without collecting evidence for them.
+
+## Step 3: Optimizations applied
+
+1. **Lazy announcement list:** Replaced the eager `ListView` children with `ListView.builder`, so rows are created as needed when scrolling. The current sample has only ten announcements, so the benefit for this dataset is small; this avoids eagerly creating every row as the list grows.
+2. **Smaller rebuild scope:** Moved the search field and results list into separate consumer widgets. Typing in the search field updates those consumers without rebuilding the Home page and its AppBar.
+3. **Reuse whitespace matcher:** Reused one compiled regular expression when normalizing search text instead of creating a new expression for each normalization.
+
+These are general UI and search-path optimizations. The saved frame 124 shows raster-phase jank, not slow UI build work, and its screenshot does not reveal the raster workload. Therefore, these changes cannot yet be claimed as a fix for that specific jank; profile the same interaction again to compare.

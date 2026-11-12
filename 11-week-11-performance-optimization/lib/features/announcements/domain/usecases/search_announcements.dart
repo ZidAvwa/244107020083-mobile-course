@@ -1,5 +1,7 @@
 typedef AnnouncementSummary = ({String id, String title});
 
+final _whitespacePattern = RegExp(r'\s+');
+
 class SearchAnnouncements {
   const SearchAnnouncements();
 
@@ -20,4 +22,4 @@ class SearchAnnouncements {
 }
 
 String _normalize(String value) =>
-    value.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
+    value.trim().replaceAll(_whitespacePattern, ' ').toLowerCase();

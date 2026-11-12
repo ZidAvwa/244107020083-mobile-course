@@ -6,31 +6,11 @@ import '../../../../routes.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/announcement_search_providers.dart';
 
-class HomePage extends ConsumerStatefulWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends ConsumerState<HomePage> {
-  final _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final query = ref.watch(announcementSearchQueryProvider);
-    final announcementsList = ref.watch(announcementSummariesProvider);
-    final announcements = ref.watch(searchAnnouncementsProvider)(
-      announcements: announcementsList,
-      query: query,
-    );
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Announcements'),
@@ -52,54 +32,90 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search announcements',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: query.isEmpty
-                    ? null
-                    : IconButton(
-                        tooltip: 'Clear search',
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref
-                              .read(announcementSearchQueryProvider.notifier)
-                              .clear();
-                        },
-                      ),
-                border: const OutlineInputBorder(),
-              ),
-              onChanged: (value) => ref
-                  .read(announcementSearchQueryProvider.notifier)
-                  .update(value),
-            ),
-          ),
-          Expanded(
-            child: announcements.isEmpty
-                ? const Center(
-                    child: Text(
-                      'No announcements found. Try a different search.',
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                : ListView(
-                    children: [
-                      for (final announcement in announcements)
-                        ListTile(
-                          title: Text(announcement.title),
-                          onTap: () => context.push(
-                            AppRoutes.announcement(announcement.id),
-                          ),
-                        ),
-                    ],
-                  ),
-          ),
+          const _AnnouncementSearchField(),
+          const Expanded(child: _AnnouncementsList()),
         ],
       ),
+    );
+  }
+}
+
+class _AnnouncementSearchField extends ConsumerStatefulWidget {
+  const _AnnouncementSearchField();
+
+  @override
+  ConsumerState<_AnnouncementSearchField> createState() =>
+      _AnnouncementSearchFieldState();
+}
+
+class _AnnouncementSearchFieldState
+    extends ConsumerState<_AnnouncementSearchField> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = ref.watch(announcementSearchQueryProvider);
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: 'Search announcements',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: query.isEmpty
+              ? null
+              : IconButton(
+                  tooltip: 'Clear search',
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    ref.read(announcementSearchQueryProvider.notifier).clear();
+                  },
+                ),
+          border: const OutlineInputBorder(),
+        ),
+        onChanged: (value) =>
+            ref.read(announcementSearchQueryProvider.notifier).update(value),
+      ),
+    );
+  }
+}
+
+class _AnnouncementsList extends ConsumerWidget {
+  const _AnnouncementsList();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final query = ref.watch(announcementSearchQueryProvider);
+    final announcements = ref.watch(searchAnnouncementsProvider)(
+      announcements: ref.watch(announcementSummariesProvider),
+      query: query,
+    );
+
+    if (announcements.isEmpty) {
+      return const Center(
+        child: Text(
+          'No announcements found. Try a different search.',
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: announcements.length,
+      itemBuilder: (context, index) {
+        final announcement = announcements[index];
+        return ListTile(
+          title: Text(announcement.title),
+          onTap: () => context.push(AppRoutes.announcement(announcement.id)),
+        );
+      },
     );
   }
 }
