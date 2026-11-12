@@ -40,3 +40,10 @@ These are general UI and search-path optimizations. The saved frame 124 shows ra
 - `screenshots/2peak3.png`: Selected Flutter frame 308 reports no jank; raster phase is 14.8 ms.
 
 The new capture still contains at least one janky frame (frame 298), so the changes above have not been shown to eliminate jank. The baseline screenshot `peak1.png` also recorded raster jank (21.6 ms on frame 124), but the captures do not establish that the same screen/action was tested under comparable conditions. We therefore cannot conclude from these screenshots whether overall performance improved or worsened. Record both before and after runs with the same interaction and compare the affected frames.
+
+## Step 5: Memory check
+
+- `screenshots/memory-before-navigation.png` and `screenshots/memory-after-navigation.png` show the DevTools **Profile Memory** table after garbage collection.
+- Both screenshots report **10.8 MB** for All Classes, and the visible class instance counts and sizes are unchanged (for example, `$ProviderElement`: 8; `$Observable`: 14; `ConsumerStatefulElement`: 3).
+- Conclusion: No increase is visible in the displayed classes after the navigation test, so these captures do not show evidence of a memory leak.
+- Limitation: These are Profile Memory table screenshots, not saved heap snapshots or a Diff Snapshots result. Only the visible class rows can be compared, so this is a limited check rather than proof that no leak exists.
