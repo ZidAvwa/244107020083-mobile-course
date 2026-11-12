@@ -1,49 +1,93 @@
 # Performance Findings
 
-## Baseline
+## Test setup
 
-- Run mode: Profile mode on an Android phone.
-- Evidence: `screenshots/before-profile.png` shows the Flutter frame chart. The screenshot does not identify which user action was being performed.
+- Device/mode: Android phone, Flutter profile mode.
+- Tool: Flutter DevTools Performance and Memory tabs.
+- The screenshots do not document the exact user action during each selected
+  frame. Before/after frame measurements should therefore not be treated as a
+  controlled comparison.
+- Raw DevTools exports: [`dart_devtools_before.json`](./dart_devtools_before.json)
+  and [`dart_devtools_after.json`](./dart_devtools_after.json).
 
-## Confirmed finding
+## Baseline profile
 
-### 1. Raster jank on Flutter frame 124
+### Raster jank: frame 124
 
-`dart_devtools_before.json`
+- Evidence: [`baseline-raster-jank-frame-124.png`](../screenshots/baseline-raster-jank-frame-124.png)
+  reports **Raster Jank Detected**. Raster took **21.6 ms**, above the
+  approximately **16.7 ms** frame budget for 60 FPS. UI Build took 0.1 ms and
+  Paint took 0.4 ms.
+- Impact: This frame missed the 60 FPS budget and may appear as a brief
+  stutter.
+- Context limitation: The screenshot does not identify the screen or action,
+  or the content being rasterized, so it does not establish a root cause.
 
-- Screen/action: Not identifiable.
-- Evidence: `screenshots/peak1.png` shows **Raster Jank Detected** for Flutter frame 124. Raster phase took **21.6 ms**, exceeding the approximately **16.7 ms** frame budget for 60 FPS. UI build and paint took 0.1 ms and 0.4 ms, respectively, so the captured delay was in rasterization.
-- Impact: This frame missed the 60 FPS budget and could appear as a brief dropped or delayed frame.
-- Follow-up: Record again while noting the exact screen and action, then inspect the selected frame to connect the raster jank to its cause.
 
-## Frames checked with no jank
+### Other selected baseline frames
 
-- `screenshots/peak2.png`: Flutter frame 386; DevTools reports no jank. Build 3.0 ms, layout 3.3 ms, paint 2.3 ms, raster 8.6 ms.
-- `screenshots/peak3.png`: Flutter frame 398; DevTools reports no jank. Build 3.2 ms, layout 6.6 ms, paint 1.9 ms, raster 6.9 ms.
+- [`baseline-frame-386-no-jank.png`](../screenshots/baseline-frame-386-no-jank.png):
+  no jank; Build 3.0 ms, Layout 3.3 ms, Paint 2.3 ms, Raster 8.6 ms.
+- [`baseline-frame-398-no-jank.png`](../screenshots/baseline-frame-398-no-jank.png):
+  no jank; Build 3.2 ms, Layout 6.6 ms, Paint 1.9 ms, Raster 6.9 ms.
 
-These two frames are not performance findings. The screenshots currently support only one confirmed issue; they do not provide evidence for two additional findings. Do not infer repeated requests, excessive rebuilds, slow scrolling, or memory leaks without collecting evidence for them.
+These are individual selected frames and do not rule out jank elsewhere in the
+recording.
 
-## Step 3: Optimizations applied
+## Optimizations applied
 
-1. **Lazy announcement list:** Replaced the eager `ListView` children with `ListView.builder`, so rows are created as needed when scrolling. The current sample has only ten announcements, so the benefit for this dataset is small; this avoids eagerly creating every row as the list grows.
-2. **Smaller rebuild scope:** Moved the search field and results list into separate consumer widgets. Typing in the search field updates those consumers without rebuilding the Home page and its AppBar.
-3. **Reuse whitespace matcher:** Reused one compiled regular expression when normalizing search text instead of creating a new expression for each normalization.
+1. Replaced the eager announcement list with `ListView.builder` to construct
+   rows lazily.
+2. Split the search field and results into separate Riverpod consumer widgets,
+   reducing rebuild scope when the search query changes.
+3. Reused the compiled whitespace regular expression during query
+   normalization.
 
-These are general UI and search-path optimizations. The saved frame 124 shows raster-phase jank, not slow UI build work, and its screenshot does not reveal the raster workload. Therefore, these changes cannot yet be claimed as a fix for that specific jank; profile the same interaction again to compare.
+The sample currently has ten in-memory announcements, so the expected benefit
+of lazy construction is limited for this dataset. These changes target list
+construction and search-triggered work; the baseline jank was raster-phase
+work, whose cause is not visible in the capture.
 
-## Step 4: Post-optimization verification
+## Post-change profile
 
-`dart_devtools_after.json`
+- [`after-frame-286-no-jank.png`](../screenshots/after-frame-286-no-jank.png):
+  selected frame reports no jank; Raster 13.0 ms.
+- [`after-raster-jank-frame-298.png`](../screenshots/after-raster-jank-frame-298.png):
+  **Raster Jank Detected**; Raster 23.3 ms. UI Build 4.6 ms, Layout 8.7 ms,
+  Paint 2.0 ms.
+- [`after-frame-308-no-jank.png`](../screenshots/after-frame-308-no-jank.png):
+  selected frame reports no jank; Raster 14.8 ms.
 
-- `screenshots/2peak1.png`: Selected Flutter frame 286 reports no jank; raster phase is 13.0 ms.
-- `screenshots/2peak2.png`: Flutter frame 298 reports **Raster Jank Detected**; raster phase is 23.3 ms. UI phases are Build 4.6 ms, Layout 8.7 ms, and Paint 2.0 ms.
-- `screenshots/2peak3.png`: Selected Flutter frame 308 reports no jank; raster phase is 14.8 ms.
+The post-change recording still contains a janky frame. Although the selected
+baseline jank was 21.6 ms and the post-change jank was 23.3 ms, the screenshots
+do not establish that the same interaction was measured under comparable
+conditions. They cannot establish whether overall performance improved or
+worsened.
 
-The new capture still contains at least one janky frame (frame 298), so the changes above have not been shown to eliminate jank. The baseline screenshot `peak1.png` also recorded raster jank (21.6 ms on frame 124), but the captures do not establish that the same screen/action was tested under comparable conditions. We therefore cannot conclude from these screenshots whether overall performance improved or worsened. Record both before and after runs with the same interaction and compare the affected frames.
+## Memory check
 
-## Step 5: Memory check
+- Compared [`memory-before-navigation.png`](../screenshots/memory-before-navigation.png)
+  and [`memory-after-navigation.png`](../screenshots/memory-after-navigation.png)
+  after repeating Home → announcement → Back navigation.
+- Both Profile Memory tables show **10.8 MB** total. The visible counts are
+  unchanged, including `$ProviderElement` (8), `$Observable` (14), and
+  `ConsumerStatefulElement` (3).
+- Conclusion: The displayed data contains no evidence of an accumulating
+  object in this test.
+- Limitation: These are Profile Memory table captures, not saved heap
+  snapshots or a Diff Snapshots result. This limited comparison is not proof
+  that the app has no memory leaks.
 
-- `screenshots/memory-before-navigation.png` and `screenshots/memory-after-navigation.png` show the DevTools **Profile Memory** table after garbage collection.
-- Both screenshots report **10.8 MB** for All Classes, and the visible class instance counts and sizes are unchanged (for example, `$ProviderElement`: 8; `$Observable`: 14; `ConsumerStatefulElement`: 3).
-- Conclusion: No increase is visible in the displayed classes after the navigation test, so these captures do not show evidence of a memory leak.
-- Limitation: These are Profile Memory table screenshots, not saved heap snapshots or a Diff Snapshots result. Only the visible class rows can be compared, so this is a limited check rather than proof that no leak exists.
+## Validation
+
+The saved validation screenshot reports `flutter analyze` with no issues and
+all 13 tests passing:
+
+![Flutter analyze and test output](../screenshots/validation-analyze-test.png)
+
+## Follow-up
+
+To evaluate the jank fix, record a new before/after run using the same device,
+profile mode, and repeatable screen interaction. Note the action at the time of
+each slow frame and inspect its UI and raster phases before choosing a targeted
+optimization.
