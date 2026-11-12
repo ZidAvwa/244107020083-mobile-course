@@ -9,6 +9,8 @@
 
 ### 1. Raster jank on Flutter frame 124
 
+`dart_devtools_before.json`
+
 - Screen/action: Not identifiable.
 - Evidence: `screenshots/peak1.png` shows **Raster Jank Detected** for Flutter frame 124. Raster phase took **21.6 ms**, exceeding the approximately **16.7 ms** frame budget for 60 FPS. UI build and paint took 0.1 ms and 0.4 ms, respectively, so the captured delay was in rasterization.
 - Impact: This frame missed the 60 FPS budget and could appear as a brief dropped or delayed frame.
@@ -28,3 +30,13 @@ These two frames are not performance findings. The screenshots currently support
 3. **Reuse whitespace matcher:** Reused one compiled regular expression when normalizing search text instead of creating a new expression for each normalization.
 
 These are general UI and search-path optimizations. The saved frame 124 shows raster-phase jank, not slow UI build work, and its screenshot does not reveal the raster workload. Therefore, these changes cannot yet be claimed as a fix for that specific jank; profile the same interaction again to compare.
+
+## Step 4: Post-optimization verification
+
+`dart_devtools_after.json`
+
+- `screenshots/2peak1.png`: Selected Flutter frame 286 reports no jank; raster phase is 13.0 ms.
+- `screenshots/2peak2.png`: Flutter frame 298 reports **Raster Jank Detected**; raster phase is 23.3 ms. UI phases are Build 4.6 ms, Layout 8.7 ms, and Paint 2.0 ms.
+- `screenshots/2peak3.png`: Selected Flutter frame 308 reports no jank; raster phase is 14.8 ms.
+
+The new capture still contains at least one janky frame (frame 298), so the changes above have not been shown to eliminate jank. The baseline screenshot `peak1.png` also recorded raster jank (21.6 ms on frame 124), but the captures do not establish that the same screen/action was tested under comparable conditions. We therefore cannot conclude from these screenshots whether overall performance improved or worsened. Record both before and after runs with the same interaction and compare the affected frames.
