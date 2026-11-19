@@ -110,9 +110,3 @@ Save screenshots in `screenshots/`:
 ![Android integration test results](./screenshots/integration-test.png)
 
 ![Announcement details screen](./screenshots/announcement-details.png)
-
-From this project directory, run the commands above. In VS Code's terminal,
-maximize the panel and use **Win+Shift+S** to select the relevant output. Save
-each capture in this project's `screenshots/` folder. For the optional app
-image, run the flow on a device, open the selected announcement, then use
-**Win+Shift+S** to capture the app screen.
