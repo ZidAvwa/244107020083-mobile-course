@@ -17,10 +17,16 @@ class FakeAuthRepository implements AuthRepository {
     required String password,
   }) async {
     if (!email.contains('@')) {
-      return (session: null, failure: const AuthFailure('Invalid email or password'));
+      return (
+        session: null,
+        failure: const AuthFailure('Invalid email or password'),
+      );
     }
     loggedIn = true;
-    return (session: const AuthSession(access: 'a', refresh: 'r'), failure: null);
+    return (
+      session: const AuthSession(access: 'a', refresh: 'r'),
+      failure: null,
+    );
   }
 
   @override
@@ -68,28 +74,35 @@ class FakePushRepository implements PushRepository {
 }
 
 void main() {
-  test('Login returns a failure for an invalid email', () async {
-    final result = await Login(FakeAuthRepository())(email: 'nope', password: '123456');
-    expect(result.session, isNull);
-    expect(result.failure, isA<AuthFailure>());
+  group('Login and session use cases', () {
+    test('Login returns a failure for an invalid email', () async {
+      final result = await Login(FakeAuthRepository())(
+        email: 'nope',
+        password: '123456',
+      );
+      expect(result.session, isNull);
+      expect(result.failure, isA<AuthFailure>());
+    });
+
+    test('Login returns a session and GetSession becomes true', () async {
+      final repo = FakeAuthRepository();
+      final result = await Login(repo)(email: 'a@b.c', password: '123456');
+      expect(result.failure, isNull);
+      expect(await GetSession(repo)(), isTrue);
+    });
   });
 
-  test('Login returns a session and GetSession becomes true', () async {
-    final repo = FakeAuthRepository();
-    final result = await Login(repo)(email: 'a@b.c', password: '123456');
-    expect(result.failure, isNull);
-    expect(await GetSession(repo)(), isTrue);
-  });
+  group('RegisterDeviceToken use case', () {
+    test('fails locally when there is no token', () async {
+      final failure = await RegisterDeviceToken(FakePushRepository())();
+      expect(failure, isA<LocalFailure>());
+    });
 
-  test('RegisterDeviceToken fails locally when there is no token', () async {
-    final failure = await RegisterDeviceToken(FakePushRepository())();
-    expect(failure, isA<LocalFailure>());
-  });
-
-  test('RegisterDeviceToken sends the token to the repository', () async {
-    final repo = FakePushRepository(token: 'abc');
-    final failure = await RegisterDeviceToken(repo)();
-    expect(failure, isNull);
-    expect(repo.registered, 'abc');
+    test('sends the token to the repository', () async {
+      final repo = FakePushRepository(token: 'abc');
+      final failure = await RegisterDeviceToken(repo)();
+      expect(failure, isNull);
+      expect(repo.registered, 'abc');
+    });
   });
 }

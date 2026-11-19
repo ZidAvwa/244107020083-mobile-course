@@ -33,100 +33,110 @@ Widget _appWithAnnouncements(GoRouter router) => ProviderScope(
 );
 
 void main() {
-  test('search matches case and whitespace normalized titles', () {
-    const announcements = <AnnouncementSummary>[
-      (id: '1', title: 'Welcome to Campus Notify'),
-      (id: '2', title: 'Campus Events'),
-    ];
+  group('SearchAnnouncements', () {
+    test(
+      'normalizes case and whitespace and handles empty or unmatched input',
+      () {
+        const announcements = <AnnouncementSummary>[
+          (id: '1', title: 'Welcome to Campus Notify'),
+          (id: '2', title: 'Campus Events'),
+        ];
 
-    final results = const SearchAnnouncements()(
-      announcements: announcements,
-      query: '  cAMPUS    NOTIFY ',
-    );
+        final results = const SearchAnnouncements()(
+          announcements: announcements,
+          query: '  cAMPUS    NOTIFY ',
+        );
 
-    expect(results.map((announcement) => announcement.id), ['1']);
-    expect(
-      const SearchAnnouncements()(
-        announcements: announcements,
-        query: 'no matching announcement',
-      ),
-      isEmpty,
-    );
-    expect(
-      const SearchAnnouncements()(announcements: announcements, query: '   '),
-      announcements,
+        expect(results.map((announcement) => announcement.id), ['1']);
+        expect(
+          const SearchAnnouncements()(
+            announcements: announcements,
+            query: 'no matching announcement',
+          ),
+          isEmpty,
+        );
+        expect(
+          const SearchAnnouncements()(
+            announcements: announcements,
+            query: '   ',
+          ),
+          announcements,
+        );
+      },
     );
   });
 
-  testWidgets(
-    'search filters multiple announcements and clearing restores list',
-    (tester) async {
+  group('Announcement search widgets', () {
+    testWidgets(
+      'search filters multiple announcements and clearing restores list',
+      (tester) async {
+        final router = _createRouter();
+        addTearDown(router.dispose);
+
+        await tester.pumpWidget(_appWithAnnouncements(router));
+        await tester.pumpAndSettle();
+
+        final searchField = find.byType(TextField);
+        expect(find.text('Welcome to Campus Notify'), findsOneWidget);
+        expect(find.text('Campus Events'), findsOneWidget);
+        expect(find.text('Library Hours'), findsOneWidget);
+
+        await tester.enterText(searchField, '  cAMPUS ');
+        await tester.pumpAndSettle();
+        expect(find.text('Welcome to Campus Notify'), findsOneWidget);
+        expect(find.text('Campus Events'), findsOneWidget);
+        expect(find.text('Library Hours'), findsNothing);
+
+        await tester.enterText(searchField, '  cAMPUS    NOTIFY ');
+        await tester.pumpAndSettle();
+        expect(find.text('Welcome to Campus Notify'), findsOneWidget);
+        expect(find.text('Campus Events'), findsNothing);
+
+        await tester.enterText(searchField, 'no matching announcement');
+        await tester.pumpAndSettle();
+        expect(find.text('Welcome to Campus Notify'), findsNothing);
+        expect(
+          find.text('No announcements found. Try a different search.'),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.byTooltip('Clear search'));
+        await tester.pumpAndSettle();
+        expect(find.text('Welcome to Campus Notify'), findsOneWidget);
+        expect(find.text('Campus Events'), findsOneWidget);
+        expect(find.text('Library Hours'), findsOneWidget);
+
+        await tester.tap(find.text('Welcome to Campus Notify'));
+        await tester.pumpAndSettle();
+        expect(find.text('Details for announcement 1'), findsOneWidget);
+      },
+    );
+
+    testWidgets('reopening announcements clears a stale search query', (
+      tester,
+    ) async {
       final router = _createRouter();
       addTearDown(router.dispose);
 
       await tester.pumpWidget(_appWithAnnouncements(router));
       await tester.pumpAndSettle();
-
-      final searchField = find.byType(TextField);
-      expect(find.text('Welcome to Campus Notify'), findsOneWidget);
-      expect(find.text('Campus Events'), findsOneWidget);
-      expect(find.text('Library Hours'), findsOneWidget);
-
-      await tester.enterText(searchField, '  cAMPUS ');
+      await tester.enterText(find.byType(TextField), 'Campus');
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Campus Notify'), findsOneWidget);
-      expect(find.text('Campus Events'), findsOneWidget);
       expect(find.text('Library Hours'), findsNothing);
 
-      await tester.enterText(searchField, '  cAMPUS    NOTIFY ');
+      router.go('/announcement/1');
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Campus Notify'), findsOneWidget);
-      expect(find.text('Campus Events'), findsNothing);
+      expect(find.text('Details for announcement 1'), findsOneWidget);
 
-      await tester.enterText(searchField, 'no matching announcement');
+      router.go('/');
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to Campus Notify'), findsNothing);
       expect(
-        find.text('No announcements found. Try a different search.'),
-        findsOneWidget,
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '',
       );
-
-      await tester.tap(find.byTooltip('Clear search'));
-      await tester.pumpAndSettle();
       expect(find.text('Welcome to Campus Notify'), findsOneWidget);
       expect(find.text('Campus Events'), findsOneWidget);
       expect(find.text('Library Hours'), findsOneWidget);
-
-      await tester.tap(find.text('Welcome to Campus Notify'));
-      await tester.pumpAndSettle();
-      expect(find.text('Details for announcement 1'), findsOneWidget);
-    },
-  );
-
-  testWidgets('reopening announcements clears a stale search query', (
-    tester,
-  ) async {
-    final router = _createRouter();
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(_appWithAnnouncements(router));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'Campus');
-    await tester.pumpAndSettle();
-    expect(find.text('Library Hours'), findsNothing);
-
-    router.go('/announcement/1');
-    await tester.pumpAndSettle();
-    expect(find.text('Details for announcement 1'), findsOneWidget);
-
-    router.go('/');
-    await tester.pumpAndSettle();
-    expect(
-      tester.widget<TextField>(find.byType(TextField)).controller!.text,
-      '',
-    );
-    expect(find.text('Welcome to Campus Notify'), findsOneWidget);
-    expect(find.text('Campus Events'), findsOneWidget);
-    expect(find.text('Library Hours'), findsOneWidget);
+    });
   });
 }
